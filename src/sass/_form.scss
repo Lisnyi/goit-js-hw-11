@@ -3,6 +3,7 @@
     justify-content: center;
     background-color: slateblue;
     padding: 10px 0;
+    margin-bottom: 20px;
 }
 
 .search-form input {
@@ -10,16 +11,15 @@
     height: 30px;
     margin: 0;
     padding: 2px 15px;
-    font-size: 18;
+    font-size: 18px;
     font-weight: normal;
-    line-height: 0;
     border: 1.3px solid transparent;
     border-bottom-left-radius: 2px;
     border-top-left-radius: 2px;
     outline: none;
 
     &::placeholder {
-        font-size: 18;
+        font-size: 18px;
     }
 
     &:focus {
