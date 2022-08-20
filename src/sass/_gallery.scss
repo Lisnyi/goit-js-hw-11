@@ -15,6 +15,7 @@
   .photo-card {
     max-width: calc((1140 - 36)/4);
     height: 233px;
+    box-shadow: 0 0 3px 3px rgba(0,0,0,.4);
   }
 
   .photo-card img {

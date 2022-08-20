@@ -1,17 +1,26 @@
 import { fetchImages } from './js/fetchImages'
 import { Notify } from 'notiflix/build/notiflix-notify-aio'
+import SimpleLightbox from "simplelightbox"
+import "simplelightbox/dist/simple-lightbox.min.css"
 
 const form = document.querySelector("#search-form")
 const inputField = document.querySelector("input")
 const galleryRef = document.querySelector(".gallery")
 
-form.addEventListener("submit", startSearch)
+let gallery = new SimpleLightbox('.gallery a')
+let searchingValue = ''
+let pageCounter = 1
+
+form.addEventListener ("submit", startSearch)
+window.addEventListener ("scroll", loadMoreImagesByScroll)
 
 function startSearch (e) {
     e.preventDefault()
-    let searchingValue = inputField.value.trim()
+    searchingValue = inputField.value.trim()
+    galleryRef.innerHTML = ""
+    pageCounter = 1
     if (searchingValue !== "") {
-        fetchImages(searchingValue)
+        fetchImages(searchingValue, pageCounter.toString())
         .then(data => {
         if (data.data.totalHits === 0) {
             failSearching()
@@ -19,6 +28,7 @@ function startSearch (e) {
         }
         successSearching(data.data.totalHits)
         renderPhotoCard(data.data.hits)})
+        .catch(console.error(e))
     }
 }
 
@@ -55,5 +65,16 @@ function renderPhotoCard (data) {
         `)
     .join("")
 
-    galleryRef.innerHTML = markup;
+    galleryRef.insertAdjacentHTML("beforeend", markup);
+    gallery.refresh()
+}
+
+function loadMoreImagesByScroll () {
+    const documentRect = document.documentElement.getBoundingClientRect()
+    if (documentRect.bottom <= document.documentElement.clientHeight) {
+        pageCounter += 1
+        fetchImages(searchingValue, pageCounter.toString())
+        .then(data => renderPhotoCard(data.data.hits))
+        .catch(console.error(error))
+    }
 }
