@@ -10,27 +10,32 @@ const galleryRef = document.querySelector(".gallery")
 let gallery = new SimpleLightbox('.gallery a')
 let searchingValue = ''
 let pageCounter = 1
+let totalHits = 0
 
 form.addEventListener ("submit", startSearch)
 window.addEventListener ("scroll", loadMoreImagesByScroll)
 
-function startSearch (e) {
+async function startSearch (e) {
     e.preventDefault()
     searchingValue = inputField.value.trim()
     galleryRef.innerHTML = ""
     pageCounter = 1
     if (searchingValue !== "") {
-        fetchImages(searchingValue, pageCounter.toString())
-        .then(data => {
-        if (data.data.totalHits === 0) {
-            failSearching()
-            return
+        try {
+            const data = await fetchImages(searchingValue, pageCounter.toString())
+            if (data.data.totalHits === 0) {
+                failSearching()
+                return
+            }
+            totalHits = data.data.totalHits
+            renderPhotoCard(data.data.hits)
+            successSearching(data.data.totalHits)}
+        catch (error) {
+            console.log(error)
         }
-        successSearching(data.data.totalHits)
-        renderPhotoCard(data.data.hits)})
-        .catch(console.error(e))
-    }
+    } 
 }
+
 
 function successSearching (data) {
     Notify.success(`Hooray! We found ${data} images.`)
@@ -38,6 +43,10 @@ function successSearching (data) {
 
 function failSearching () {
     Notify.failure("Sorry, there are no images matching your search query. Please try again.")
+}
+
+function endOfSearchResults () {
+    Notify.failure("We're sorry, but you've reached the end of search results.")
 }
 
 function renderPhotoCard (data) {
@@ -69,12 +78,19 @@ function renderPhotoCard (data) {
     gallery.refresh()
 }
 
-function loadMoreImagesByScroll () {
+async function loadMoreImagesByScroll () {
     const documentRect = document.documentElement.getBoundingClientRect()
     if (documentRect.bottom <= document.documentElement.clientHeight) {
         pageCounter += 1
-        fetchImages(searchingValue, pageCounter.toString())
-        .then(data => renderPhotoCard(data.data.hits))
-        .catch(console.error(error))
+        if (totalHits <= galleryRef.childElementCount) {
+            endOfSearchResults()
+            return
+        }
+       try {
+        const data = await fetchImages(searchingValue, pageCounter.toString())
+        renderPhotoCard(data.data.hits)
+       } catch (error) {
+        console.log(error)
+       }
     }
 }
